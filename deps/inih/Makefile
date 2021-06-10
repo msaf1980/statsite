@@ -1,7 +1,7 @@
 SOURCES=\
 ./inih.c \
 
-CFLAGS   = -O3
+CFLAGS   = -fPIE -O3
 LDFLAGS  =
 CC = /usr/bin/gcc
 

@@ -1,7 +1,7 @@
 SOURCES=\
 ./ae.c \
 
-CFLAGS   = -g -std=c99 -Wpointer-arith
+CFLAGS   = -fPIE -g -std=c99 -Wpointer-arith
 LDFLAGS  =
 CC = /usr/bin/gcc
 
