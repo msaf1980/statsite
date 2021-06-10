@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+VERSION:=$(shell sh -c 'egrep "^Version:" rpm/statsite.spec | cut -f2')
+
 AUTOMAKE_OPTIONS := subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
@@ -90,18 +92,11 @@ integ: all check
 	py.test integ/
 
 sdist: clean
-	mkdir -vp /tmp/statsite-@STATSITE_VERSION@
-	cp -R . /tmp/statsite-@STATSITE_VERSION@
-	tar -zcv --exclude='.git' --exclude='.gitignore' -f statsite-@STATSITE_VERSION@.tar.gz -C /tmp statsite-@STATSITE_VERSION@
-	rm -rf /tmp/statsite-@STATSITE_VERSION@
+	mkdir -vp /tmp/statsite-$(VERSION)
+	cp -R . /tmp/statsite-$(VERSION)
+	tar -zcv --exclude='.git' --exclude='.gitignore' --exclude='.*cache' -f statsite-$(VERSION).tar.gz -C /tmp statsite-$(VERSION)
+	rm -rf /tmp/statsite-$(VERSION)
 
-
-clean-local: clean-local-check
-
-.PHONY: clean-local-check
-clean-local-check:
-	test ! -f ".sconsign.dblite" || rm -f .sconsign.dblite
-	test ! -d "deps/check-0.9.8/src/.libs" || rm -fr deps/check-0.9.8/src/.libs
 
 RPMBUILDROOT=/tmp/rpm-build
 rpms: sdist build

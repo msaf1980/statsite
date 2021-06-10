@@ -5,13 +5,6 @@
 ## Set the version in both instances below here:
 AC_INIT([Statsite], [0.8.1])
 
-STATSITE_MAJOR_VERSION=0
-STATSITE_MINOR_VERSION=8
-STATSITE_MICRO_VERSION=1
-STATSITE_VERSION=$STATSITE_MAJOR_VERSION.$STATSITE_MINOR_VERSION.$STATSITE_MICRO_VERSION
-
-
-
 # place to put some extra build scripts installed
 AC_CONFIG_AUX_DIR([ac_config])
 
