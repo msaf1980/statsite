@@ -1,4 +1,4 @@
-#include <check.h>
+#include "ctest.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -15,26 +15,25 @@ static int empty_cb(FILE *pipe, void *data, metric_type type, char *name, void *
     return 1;
 }
 
-START_TEST(test_stream_empty)
+CTEST(streaming, stream_empty)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
     int called = 0;
     res = stream_to_command(&m, &called, empty_cb, "tee /tmp/stream_empty");
-    fail_unless(res == 0);
-    fail_unless(called == 0);
+    ASSERT_TRUE(res == 0);
+    ASSERT_TRUE(called == 0);
 
     // Check the file exists
-    fail_unless(open("/tmp/stream_empty", O_RDONLY) >= 0);
+    ASSERT_TRUE(open("/tmp/stream_empty", O_RDONLY) >= 0);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
-    fail_unless(unlink("/tmp/stream_empty") == 0);
+    ASSERT_TRUE(unlink("/tmp/stream_empty") == 0);
 }
-END_TEST
 
 static int some_cb(FILE *pipe, void *data, metric_type type, char *name, void *value) {
     // Increment the counts
@@ -64,26 +63,26 @@ static int some_cb(FILE *pipe, void *data, metric_type type, char *name, void *v
     return 0;
 }
 
-START_TEST(test_stream_some)
+CTEST(streaming, stream_some)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
     // Add some metrics
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
 
     int called = 0;
     res = stream_to_command(&m, &called, some_cb, "cat > /tmp/stream_some");
-    fail_unless(res == 0);
-    fail_unless(called == 5);
+    ASSERT_TRUE(res == 0);
+    ASSERT_TRUE(called == 5);
 
     FILE *f = fopen("/tmp/stream_some", "r");
     char buf[256];
@@ -95,61 +94,58 @@ kv.test.100.000000\n\
 counts.foo.10.000000\n\
 counts.bar.30.000000\n\
 timers.baz.11.000000\n";
-    fail_unless(strcmp(check, (char*)&buf) == 0);
+    ASSERT_STR(check, (char*)&buf);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
-    fail_unless(unlink("/tmp/stream_some") == 0);
+    ASSERT_TRUE(unlink("/tmp/stream_some") == 0);
 }
-END_TEST
 
-START_TEST(test_stream_bad_cmd)
+CTEST(streaming, stream_bad_cmd)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
     // Add some metrics
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
 
     int called = 0;
     res = stream_to_command(&m, &called, some_cb, "abcd 2>/dev/null");
-    fail_unless(res != 0);
+    ASSERT_TRUE(res != 0);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 }
-END_TEST
 
-START_TEST(test_stream_sigpipe)
+CTEST(streaming, stream_sigpipe)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
     // Add some metrics
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
+    ASSERT_TRUE(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
 
     int called = 0;
     res = stream_to_command(&m, &called, some_cb, "head -n1 >/dev/null");
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_TRUE(res == 0);
 }
-END_TEST

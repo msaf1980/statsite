@@ -75,7 +75,7 @@ tests/runner.c
 
 tests_runner_CFLAGS = -g -std=gnu99 -pthread -D_GNU_SOURCE -DLOG_PERROR=0 -O3 -pthread -lm @LINK_TO_RT@ -Ideps/inih/ -Ideps/ae/ -Isrc/
 tests_runner_LDFLAGS = -g -pg -no-install
-tests_runner_LDADD = deps/ae/libae.a deps/inih/libinih.a deps/murmurhash/libmurmur.a @CHECK_LIBS@
+tests_runner_LDADD = deps/ae/libae.a deps/inih/libinih.a deps/murmurhash/libmurmur.a
 TESTS = tests/runner
 TESTS_ENVIRONMENT = CK_FORK=yes
 CK_VERBOSITY = verbose
@@ -86,7 +86,7 @@ endif
 # Targets
 test: integ
 
-integ: all
+integ: all check
 	py.test integ/
 
 sdist: clean

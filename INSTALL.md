@@ -12,7 +12,6 @@ components and build steps. To setup your build environment, make sure you
 have all required dependencies. At least the following is required when building
 using the git sources, and running tests:
 
-- check (or as it's called, libcheck, see https://libcheck.github.io/check/)
 - libtool
 - automake
 - autoconf
@@ -20,7 +19,6 @@ using the git sources, and running tests:
 - tex (if you're recompiling check)
 - pytest
 - requests (python-requests)
-- scons (for legacy build and test scripts)
 
 These dependencies have dependencies of their own, pytest requires python for
 example, and installing pytest using a package management tool requires pip or
@@ -83,19 +81,6 @@ Currently, we the requirements are:
 - tetex-bin (or any texinfo-compatible TeX installation, for documentation)
 - POSIX sed
 
-Check should be easy to build, a standard setup will do:
-
-~~~~
-# make sure you are in the check directory
-cd check-0.10.0
-./configure
-make
-make install
-~~~~
-
-This is how the packaged `check` gets built, and how source distributions are built.
-If you use a git version, you may need to setup its autotools parts,
-check has it's own install docs on that.
 
 For python test dependencies, you can use pip/easy_install, or if you really want
 to do it manually, see below links for the python packages required.
@@ -117,7 +102,7 @@ Install the packages according to the following snippet:
 
 ~~~~
 sudo apt-get update
-sudo apt-get -y install build-essential libtool autoconf automake scons python-setuptools lsof git texlive check
+sudo apt-get -y install build-essential libtool autoconf automake python-setuptools lsof git texlive
 sudo easy_install pip
 sudo pip install pytest==3.4.0 
 sudo pip install requests==2.21.0
@@ -178,4 +163,3 @@ CentOS
 Install packages:
 
 yum groupinstall 'Development Tools'
-yum install check
