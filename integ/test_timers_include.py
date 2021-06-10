@@ -15,7 +15,8 @@ except ImportError:
     sys.exit(1)
 
 
-def pytest_funcarg__servers(request):
+@pytest.fixture
+def servers(request):
     "Returns a new APIHandler with a filter manager"
     # Create tmpdir and delete after
     tmpdir = tempfile.mkdtemp()
@@ -112,3 +113,5 @@ class TestInteg(object):
         assert "timers.foobar.sample_rate|3" in out
 
 
+if __name__ == "__main__":
+    sys.exit(pytest.main(args="-k TestInteg."))

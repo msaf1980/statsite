@@ -15,7 +15,8 @@ except ImportError:
     sys.exit(1)
 
 
-def pytest_funcarg__servers(request):
+@pytest.fixture
+def servers(request):
     "Returns a new APIHandler with a filter manager"
     # Create tmpdir and delete after
     tmpdir = tempfile.mkdtemp()
@@ -78,7 +79,8 @@ extended_counters = true
     return conn, conn2, output
 
 
-def pytest_funcarg__servers_nonlegacy(request):
+@pytest.fixture
+def servers_nonlegacy(request):
     "Returns a new APIHandler with a filter manager"
     # Create tmpdir and delete after
     tmpdir = tempfile.mkdtemp()
