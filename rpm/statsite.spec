@@ -125,6 +125,9 @@ exit 0
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/cloudwatch.sh
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/opentsdb.js
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/http.py
+%attr(755, root, root) %{_libexecdir}/statsite/sinks/http.pyc
+%attr(755, root, root) %{_libexecdir}/statsite/sinks/librato.pyc
+%exclude %{_libexecdir}/statsite/sinks/__init__.pyc
 
 %changelog
 * Wed Aug 21 2019 Mark Cranny <crannym1@gmail.com>
