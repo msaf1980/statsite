@@ -1,5 +1,6 @@
-#include <check.h>
+#include "ctest.h"
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -9,45 +10,76 @@
 #include <math.h>
 #include "metrics.h"
 
-START_TEST(test_metrics_init_and_destroy)
+CTEST(metrics, metric_name_format)
+{
+    char *result;
+
+    result = metric_name_format("test.metric", ".count");
+    ASSERT_STR("test.metric.count", result);
+
+    result = metric_name_format("test.metric;env=staging", ".count");
+    ASSERT_STR("test.metric.count;env=staging", result);
+}
+
+CTEST(metrics, metric_name_format_pcnt)
+{
+    char *result;
+
+    result = metric_name_format_pcnt("test.metric", ".p", 0.9);
+    ASSERT_STR("test.metric.p90", result);
+
+    result = metric_name_format_pcnt("test.metric;env=staging", ".p", 0.95);
+    ASSERT_STR("test.metric.p95;env=staging", result);
+}
+
+CTEST(metrics, metric_name_format_hist)
+{
+    char *result;
+
+    result = metric_name_format_hist("test.metric", ".histogram.bin_>", 10.001);
+    ASSERT_STR("test.metric.histogram.bin_>10.00", result);
+
+    result = metric_name_format_hist("test.metric?env=staging", ".histogram.bin_", 10.00);
+    ASSERT_STR("test.metric.histogram.bin_10.00?env=staging", result);
+}
+
+CTEST(metrics, metrics_init_and_destroy)
 {
     metrics m;
     double quants[] = {0.5, 0.90, 0.99};
     int res = init_metrics(0.01, (double*)&quants, 3, NULL, 12, &m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
-START_TEST(test_metrics_init_defaults_and_destroy)
+CTEST(metrics, metrics_init_defaults_and_destroy)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
 static int iter_cancel_cb(void *data, metric_type type, char *key, void *val) {
     return 1;
 }
 
-START_TEST(test_metrics_empty_iter)
+CTEST(metrics, metrics_empty_iter)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_iter(&m, NULL, iter_cancel_cb) == 0);
+    res = metrics_iter(&m, NULL, iter_cancel_cb);
+    ASSERT_EQUAL(0, res);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
 static int iter_test_cb(void *data, metric_type type, char *key, void *val) {
     if (type == KEY_VAL && strcmp(key, "test") == 0) {
@@ -60,21 +92,22 @@ static int iter_test_cb(void *data, metric_type type, char *key, void *val) {
     return 0;
 }
 
-START_TEST(test_metrics_add_iter)
+CTEST(metrics, metrics_add_iter)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
     int okay = 0;
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
-    fail_unless(metrics_iter(&m, (void*)&okay, iter_test_cb) == 0);
-    fail_unless(okay == 1);
+    res = metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_iter(&m, (void*)&okay, iter_test_cb);
+    ASSERT_EQUAL(0, res);
+    ASSERT_EQUAL(1, okay);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
 static int iter_test_all_cb(void *data, metric_type type, char *key, void *val) {
     int *o = data;
@@ -111,38 +144,51 @@ static int iter_test_all_cb(void *data, metric_type type, char *key, void *val) 
     return 0;
 }
 
-START_TEST(test_metrics_add_all_iter)
+CTEST(metrics, metrics_add_all_iter)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0) == 0);
+    res = metrics_add_sample(&m, KEY_VAL, "test", 100, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, KEY_VAL, "test2", 42, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, GAUGE, "g1", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, GAUGE, "g1", 200, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, GAUGE, "g2", 42, 1.0) == 0);
+    res = metrics_add_sample(&m, GAUGE, "g1", 1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, GAUGE, "g1", 200, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, GAUGE, "g2", 42, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 4, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "foo", 6, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, COUNTER, "bar", 20, 1.0) == 0);
+    res = metrics_add_sample(&m, COUNTER, "foo", 4, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, COUNTER, "foo", 6, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, COUNTER, "bar", 10, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, COUNTER, "bar", 20, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
+    res = metrics_add_sample(&m, TIMER, "baz", 1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "baz", 10, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_set_update(&m, "zip", "foo") == 0);
-    fail_unless(metrics_set_update(&m, "zip", "wow") == 0);
+    res = metrics_set_update(&m, "zip", "foo");
+    ASSERT_EQUAL(0, res);
+    res = metrics_set_update(&m, "zip", "wow");
+    ASSERT_EQUAL(0, res);
 
     int okay = 0;
-    fail_unless(metrics_iter(&m, (void*)&okay, iter_test_all_cb) == 0);
-    fail_unless(okay == 255);
+    res = metrics_iter(&m, (void*)&okay, iter_test_all_cb);
+    ASSERT_EQUAL(0, res);
+    ASSERT_EQUAL(255, okay);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
 static int iter_test_histogram(void *data, metric_type type, char *key, void *val) {
     int *o = data;
@@ -159,7 +205,7 @@ static int iter_test_histogram(void *data, metric_type type, char *key, void *va
     return 0;
 }
 
-START_TEST(test_metrics_histogram)
+CTEST(metrics, metrics_histogram)
 {
     statsite_config config;
     int res = config_from_filename(NULL, &config);
@@ -169,31 +215,40 @@ START_TEST(test_metrics_histogram)
     histogram_config c2 = {"baz", 0, 20, 2, 12, NULL, 0};
     config.hist_configs = &c1;
     c1.next = &c2;
-    fail_unless(build_prefix_tree(&config) == 0);
+    res = build_prefix_tree(&config);
+    ASSERT_EQUAL(0, res);
 
     metrics m;
     double quants[] = {0.5, 0.90, 0.99};
     res = init_metrics(0.01, (double*)&quants, 3, config.histograms, 12, &m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", -1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "baz", 50, 1.0) == 0);
+    res = metrics_add_sample(&m, TIMER, "baz", 1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "baz", 10, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "baz", -1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "baz", 50, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, TIMER, "zip", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "zip", 10, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "zip", -1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, TIMER, "zip", 50, 1.0) == 0);
+    res = metrics_add_sample(&m, TIMER, "zip", 1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "zip", 10, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "zip", -1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, TIMER, "zip", 50, 1.0);
+    ASSERT_EQUAL(0, res);
 
     int okay = 0;
-    fail_unless(metrics_iter(&m, (void*)&okay, iter_test_histogram) == 0);
-    fail_unless(okay == 3);
+    res = metrics_iter(&m, (void*)&okay, iter_test_histogram);
+    ASSERT_EQUAL(0, res);
+    ASSERT_EQUAL(3, okay);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
 
 static int iter_test_gauge(void *data, metric_type type, char *key, void *val) {
     int *o = data;
@@ -208,23 +263,27 @@ static int iter_test_gauge(void *data, metric_type type, char *key, void *val) {
     return 0;
 }
 
-START_TEST(test_metrics_gauges)
+CTEST(metrics, metrics_gauges)
 {
     metrics m;
     int res = init_metrics_defaults(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, GAUGE, "g1", 1, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, GAUGE_DELTA, "g1", 41, 1.0) == 0);
+    res = metrics_add_sample(&m, GAUGE, "g1", 1, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, GAUGE_DELTA, "g1", 41, 1.0);
+    ASSERT_EQUAL(0, res);
 
-    fail_unless(metrics_add_sample(&m, GAUGE_DELTA, "g2", 100, 1.0) == 0);
-    fail_unless(metrics_add_sample(&m, GAUGE_DELTA, "g3", -100, 1.0) == 0);
+    res = metrics_add_sample(&m, GAUGE_DELTA, "g2", 100, 1.0);
+    ASSERT_EQUAL(0, res);
+    res = metrics_add_sample(&m, GAUGE_DELTA, "g3", -100, 1.0);
+    ASSERT_EQUAL(0, res);
 
     int okay = 0;
-    fail_unless(metrics_iter(&m, (void*)&okay, iter_test_gauge) == 0);
-    fail_unless(okay == 7);
+    res = metrics_iter(&m, (void*)&okay, iter_test_gauge);
+    ASSERT_EQUAL(0, res);
+    ASSERT_EQUAL(7, okay);
 
     res = destroy_metrics(&m);
-    fail_unless(res == 0);
+    ASSERT_EQUAL(0, res);
 }
-END_TEST
