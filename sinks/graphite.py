@@ -58,6 +58,11 @@ class GraphiteStore(object):
         self.flush = self.flush_pickle if protocol == "pickle" else self.flush_lines
         self.metrics = []
 
+        if sys.version_info[0] > 2:
+            self._write_metric = self._write_metric3
+        else:
+            self._write_metric = self._write_metric2
+
     def normalize_key(self, key):
         """
         Take a single key string and return the same string with spaces, slashes and
@@ -100,7 +105,7 @@ class GraphiteStore(object):
         # Serialize writes to the socket
         try:
             self._write_metric(data)
-        except StandardError:
+        except Exception as e:
             self.logger.exception("Failed to write out the metrics!")
 
     def flush_pickle(self):
@@ -126,7 +131,7 @@ class GraphiteStore(object):
 
         try:
             self._write_metric(message)
-        except StandardError:
+        except Exception as e:
             self.logger.exception("Failed to write out the metrics!")
 
     def close(self):
@@ -137,7 +142,7 @@ class GraphiteStore(object):
         try:
             if self.sock:
                 self.sock.close()
-        except StandardError:
+        except Exception as e:
             self.logger.warning("Failed to close connection!")
 
     def _create_socket(self):
@@ -146,17 +151,32 @@ class GraphiteStore(object):
         sock.settimeout(self.socket_timeout)
         try:
             sock.connect((self.host, self.port))
-        except StandardError:
+        except Exception as e:
             self.logger.error("Failed to connect!")
             sock = None
         return sock
 
-    def _write_metric(self, metric):
+    def _write_metric2(self, metric):
         """Tries to write a string to the socket, reconnecting on any errors"""
         for _ in xrange(self.attempts):
             if self.sock:
                 try:
                     self.sock.sendall(metric)
+                    return
+                except socket.error:
+                    self.logger.exception("Error while flushing to graphite. Reattempting...")
+
+            self.sock = self._create_socket()
+
+        self.logger.critical("Failed to flush to Graphite! Gave up after %d attempts.",
+                             self.attempts)
+
+    def _write_metric3(self, metric):
+        """Tries to write a string to the socket, reconnecting on any errors"""
+        for _ in range(self.attempts):
+            if self.sock:
+                try:
+                    self.sock.sendall(metric.encode())
                     return
                 except socket.error:
                     self.logger.exception("Error while flushing to graphite. Reattempting...")
