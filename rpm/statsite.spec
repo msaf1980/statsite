@@ -2,7 +2,7 @@
 
 Name:		statsite
 Version:	0.8.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A C implementation of statsd.
 Group:		Applications
 License:	See the LICENSE file.
@@ -125,6 +125,9 @@ exit 0
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/cloudwatch.sh
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/opentsdb.js
 %attr(755, root, root) %{_libexecdir}/statsite/sinks/http.py
+%attr(755, root, root) %{_libexecdir}/statsite/sinks/http.pyc
+%attr(755, root, root) %{_libexecdir}/statsite/sinks/librato.pyc
+%exclude %{_libexecdir}/statsite/sinks/__init__.pyc
 
 %changelog
 * Wed Aug 21 2019 Mark Cranny <crannym1@gmail.com>
