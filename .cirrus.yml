@@ -1,0 +1,33 @@
+container:
+  image: ubuntu:bionic
+
+task:
+  matrix:
+    - name: Build on Ubuntu (python 3)
+      install_dependencies_script:
+        - echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+        - apt-get update
+        - apt-get install -y pkg-config autoconf automake libtool texinfo sed make python3-pip debhelper lsof netcat python3-pytest python3-requests python3-mock
+      script: ./autogen.sh && ./configure && make && make check && pytest-3 integ/
+      container:
+        matrix:
+          - image: ubuntu:20.04
+    - name: Build on Ubuntu
+      install_dependencies_script:
+        - echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+        - apt-get update
+        - apt-get install -y pkg-config autoconf automake libtool texinfo sed make python-pip debhelper lsof netcat python-pytest python-requests python-mock
+      script: ./autogen.sh && ./configure && make && make test
+      container:
+        matrix:
+          - image: ubuntu:18.04
+          - image: ubuntu:16.04
+    - name: Build on CentOS
+      install_dependencies_script:
+        - yum install -y epel-release
+        - yum install -y automake libtool texinfo sed make gcc git lsof nc python2-pytest python2-requests python2-mock
+      script: ./autogen.sh && ./configure && make && make test
+      container:
+        matrix:
+          - image: centos:7
+          - image: centos:8
