@@ -5,13 +5,6 @@
 ## Set the version in both instances below here:
 AC_INIT([Statsite], [0.8.1])
 
-STATSITE_MAJOR_VERSION=0
-STATSITE_MINOR_VERSION=8
-STATSITE_MICRO_VERSION=1
-STATSITE_VERSION=$STATSITE_MAJOR_VERSION.$STATSITE_MINOR_VERSION.$STATSITE_MICRO_VERSION
-
-
-
 # place to put some extra build scripts installed
 AC_CONFIG_AUX_DIR([ac_config])
 
@@ -65,9 +58,6 @@ AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([bzero dup2 getpagesize gettimeofday inet_ntoa memchr memset pow select socket sqrt strcasecmp strdup strerror strncasecmp strtol])
 
-
-# PKG-Config based checks
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.7], [have_check="yes"], AC_MSG_WARN([Check not found; cannot run unit tests!]))
 
 AM_CONDITIONAL(HAVE_CHECK, test x"$have_check" = "xyes")
 

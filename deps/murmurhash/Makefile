@@ -1,7 +1,7 @@
 SOURCES=\
 ./MurmurHash3.c \
 
-CFLAGS   = -std=c99 -O3
+CFLAGS   = -fPIE -std=c99 -O3
 LDFLAGS  =
 CC = /usr/bin/gcc
 
