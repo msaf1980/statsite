@@ -2,7 +2,7 @@ Source: statsite
 Maintainer: John Keates <john@keates.nl>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.2
+Standards-Version: 0.8.1-2
 Build-Depends: debhelper (>= 9), dh-systemd, dh-autoreconf, dh-systemd, pkg-config, python-pytest, python-mock, python-requests, netcat, lsof
 
 Package: statsite
