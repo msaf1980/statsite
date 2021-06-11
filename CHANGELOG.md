@@ -1,3 +1,6 @@
+# 0.8.1 (unreleased master branch)
+* Parse tagged metric (append count, sum and other postfix before ? symbol (to __name__ tag)
+
 # 0.8.0
 
 * Timer sampling properly handles counts thanks to @nspragg
